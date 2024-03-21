@@ -38,22 +38,138 @@ app.frame('/', (c) => {
           width: '100%',
         }}
       >
-        <div
+        <h2
           style={{
-            color: 'white',
-            fontSize: 60,
-            fontStyle: 'normal',
-            letterSpacing: '-0.025em',
-            lineHeight: 1.4,
-            marginTop: 30,
-            padding: '0 120px',
-            whiteSpace: 'pre-wrap',
+            fontSize: "2.5rem",
+            fontWeight: "600",
+            color: "white",
           }}
         >
-          {status === 'response'
-            ? `Nice choice.${fruit ? ` ${fruit.toUpperCase()}!!` : ''}`
-            : 'Welcome!'}
+          What is the capital of France?
+        </h2>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            width: '100%',
+            justifyContent: 'flex-start',
+            justifyItems: 'start',
+            paddingLeft: '30%',
+            gridGap: "4",
+          }}
+        >
+            <div
+              style={{
+                alignItems: "center",
+                display: "flex",
+                gap: "2",
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: "lightgreen",
+                  border: "1px solid #E5E7EB",
+                  borderColor: "#E5E7EB",
+                  borderRadius: "9999px",
+                  display: "flex",
+                  height: "1rem",
+                  width: "1rem",
+                }}
+              />
+              <p
+                style={{
+                  fontSize: "2rem",
+                  color: "white",
+                  paddingLeft: "0.5rem",
+
+                }}
+              >
+                Berlin
+              </p>
+            </div>
+            <div
+              style={{
+                alignItems: "center",
+                display: "flex",
+                gap: "2",
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: "#EF4444",
+                  border: "1px solid #E5E7EB",
+                  borderColor: "#E5E7EB",
+                  borderRadius: "9999px",
+                  display: "flex",
+                  height: "1rem",
+                  width: "1rem",
+                }}
+              />
+              <p
+                style={{
+                  fontSize: "0.875rem",
+                  color: "white",
+                }}
+              >
+                London
+              </p>
+            </div>
+            <div
+              style={{
+                alignItems: "center",
+                display: "flex",
+                gap: "2",
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: "#3B82F6",
+                  border: "1px solid #E5E7EB",
+                  borderColor: "#E5E7EB",
+                  borderRadius: "9999px",
+                  display: "flex",
+                  height: "1rem",
+                  width: "1rem",
+                }}
+              />
+              <p
+                style={{
+                  fontSize: "0.875rem",
+                  color: "white",
+                }}
+              >
+                Paris
+              </p>
+            </div>
+            <div
+              style={{
+                alignItems: "center",
+                display: "flex",
+                gap: "2",
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: "#F59E0B",
+                  border: "1px solid #E5E7EB",
+                  borderColor: "#E5E7EB",
+                  display: "flex",
+                  borderRadius: "9999px",
+                  height: "1rem",
+                  width: "1rem",
+                }}
+              />
+              <p
+                style={{
+                  fontSize: "0.875rem",
+                  color: "white",
+                }}
+              >
+                Rome
+              </p>
+          </div>
         </div>
+
       </div>
     ),
     intents: [
