@@ -5,10 +5,12 @@ import { devtools } from 'frog/dev'
 // import { neynar } from 'frog/hubs'
 import { handle } from 'frog/next'
 import { serveStatic } from 'frog/serve-static'
+import { BASE_URL } from '@/app/api-service-config'
+import { getSession } from '@/app/mongo/frame-session'
 
 const app = new Frog({
   assetsPath: '/',
-  basePath: '/api',
+  basePath: '/trivia',
   // Supply a Hub to enable frame verification.
   // hub: neynar({ apiKey: 'NEYNAR_FROG_FM' })
 })
@@ -16,9 +18,14 @@ const app = new Frog({
 // Uncomment to use Edge Runtime
 // export const runtime = 'edge'
 
-app.frame('/', (c) => {
+app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
   const { buttonValue, inputText, status } = c
-  const fruit = inputText || buttonValue
+  const {sessionId, userId} = c.req.param()
+  // const fruit = inputText || buttonValue
+  console.log('base url', BASE_URL)
+
+  const session = await getSession(sessionId)
+  console.log('session', session)
   return c.res({
     image: (
       <div
@@ -46,6 +53,8 @@ app.frame('/', (c) => {
           }}
         >
           What is the capital of France?
+          User: {userId + " "}
+          Session: {sessionId}
         </h2>
         <div
           style={{
