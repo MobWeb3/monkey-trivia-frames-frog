@@ -6,7 +6,8 @@ import { devtools } from 'frog/dev'
 import { handle } from 'frog/next'
 import { serveStatic } from 'frog/serve-static'
 import { BASE_URL } from '@/app/api-service-config'
-import { getSession } from '@/app/mongo/frame-session'
+import { getFrameSession, getQuestions } from '@/app/mongo/frame-session'
+import { Question } from '@/app/game-domain/question'
 
 const app = new Frog({
   assetsPath: '/',
@@ -18,14 +19,37 @@ const app = new Frog({
 // Uncomment to use Edge Runtime
 // export const runtime = 'edge'
 
+const getQuestion = (questions: Question [], index: number) => {
+  return questions.length > 0 && questions[index] ? 
+  `${questions[index].question}` : 'empty'
+}
+
+const getOptions = (questions: Question [], index: number) => {
+  return questions.length > 0 && questions[index] && 
+    questions[index].options ? questions[index].options : []
+}
+
 app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
-  const { buttonValue, inputText, status } = c
-  const {sessionId, userId} = c.req.param()
-  // const fruit = inputText || buttonValue
+  const { status } = c
+  const { sessionId } = c.req.param()
   console.log('base url', BASE_URL)
 
-  const session = await getSession(sessionId)
-  console.log('session', session)
+  let frameSession;
+  let questions = [] as Question[];
+  try{
+    frameSession = await getFrameSession(sessionId);
+    console.log('frame session: ', frameSession)
+
+    if (!frameSession) {
+      console.log('No frame session found')
+    }
+
+    // Get questions given the metaphor id
+    questions = await getQuestions(frameSession.metaphor_id);
+  }
+  catch(e){
+    console.log('error', e)
+  }
   return c.res({
     image: (
       <div
@@ -52,10 +76,8 @@ app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
             color: "white",
           }}
         >
-          What is the capital of France?
-          User: {userId + " "}
-          Session: {sessionId}
-        </h2>
+          {getQuestion(questions, 0)}
+        </h2>s
         <div
           style={{
             display: 'flex',
@@ -93,7 +115,7 @@ app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
 
                 }}
               >
-                Berlin
+                { getOptions(questions, 0)[0] }
               </p>
             </div>
             <div
@@ -120,7 +142,7 @@ app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
                   color: "white",
                 }}
               >
-                London
+                { getOptions(questions, 0)[1] }
               </p>
             </div>
             <div
@@ -147,7 +169,7 @@ app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
                   color: "white",
                 }}
               >
-                Paris
+                {getOptions(questions, 0)[2]}
               </p>
             </div>
             <div
@@ -174,7 +196,7 @@ app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
                   color: "white",
                 }}
               >
-                Rome
+                {getOptions(questions, 0)[2]}
               </p>
           </div>
         </div>

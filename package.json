@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
+    "dev-dev-service": "MODE=dev-service next dev",
     "deploy": "vercel",
     "build": "next build",
     "start": "next start",
