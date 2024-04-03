@@ -8,6 +8,7 @@ import { serveStatic } from 'frog/serve-static'
 import { BASE_URL } from '@/app/api-service-config'
 import { getFrameSession, getQuestions } from '@/app/mongo/frame-session'
 import { Question } from '@/app/game-domain/question'
+import styles from './route.module'
 
 const app = new Frog({
   assetsPath: '/',
@@ -19,13 +20,13 @@ const app = new Frog({
 // Uncomment to use Edge Runtime
 // export const runtime = 'edge'
 
-const getQuestion = (questions: Question [], index: number) => {
-  return questions.length > 0 && questions[index] ? 
-  `${questions[index].question}` : 'empty'
+const getQuestion = (questions: Question[], index: number) => {
+  return questions.length > 0 && questions[index] ?
+    `${questions[index].question}` : 'empty'
 }
 
-const getOptions = (questions: Question [], index: number) => {
-  return questions.length > 0 && questions[index] && 
+const getOptions = (questions: Question[], index: number) => {
+  return questions.length > 0 && questions[index] &&
     questions[index].options ? questions[index].options : []
 }
 
@@ -36,7 +37,7 @@ app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
 
   let frameSession;
   let questions = [] as Question[];
-  try{
+  try {
     frameSession = await getFrameSession(sessionId);
     console.log('frame session: ', frameSession)
 
@@ -47,157 +48,81 @@ app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
     // Get questions given the metaphor id
     questions = await getQuestions(frameSession.metaphor_id);
   }
-  catch(e){
+  catch (e) {
     console.log('error', e)
   }
   return c.res({
     image: (
       <div
-        style={{
-          alignItems: 'center',
-          background:
-            status === 'response'
-              ? 'linear-gradient(to right, #432889, #17101F)'
-              : 'black',
-          backgroundSize: '100% 100%',
-          display: 'flex',
-          flexDirection: 'column',
-          flexWrap: 'nowrap',
-          height: '100%',
-          justifyContent: 'center',
-          textAlign: 'center',
-          width: '100%',
-        }}
+        style={styles.container}
       >
         <h2
-          style={{
-            fontSize: "2.5rem",
-            fontWeight: "600",
-            color: "white",
-          }}
+          style={styles.question}
         >
           {getQuestion(questions, 0)}
-        </h2>s
+        </h2>
         <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            width: '100%',
-            justifyContent: 'flex-start',
-            justifyItems: 'start',
-            paddingLeft: '30%',
-            gridGap: "4",
-          }}
+          style={styles.optionsContainer}
         >
+          <div
+            style={styles.option}
+          >
             <div
               style={{
-                alignItems: "center",
-                display: "flex",
-                gap: "2",
+                ...styles.optionIndicator,
+                backgroundColor: "lightgreen",
               }}
+            />
+            <p
+              style={styles.optionText}
             >
-              <div
-                style={{
-                  backgroundColor: "lightgreen",
-                  border: "1px solid #E5E7EB",
-                  borderColor: "#E5E7EB",
-                  borderRadius: "9999px",
-                  display: "flex",
-                  height: "1rem",
-                  width: "1rem",
-                }}
-              />
-              <p
-                style={{
-                  fontSize: "2rem",
-                  color: "white",
-                  paddingLeft: "0.5rem",
-
-                }}
-              >
-                { getOptions(questions, 0)[0] }
-              </p>
-            </div>
+              {getOptions(questions, 0)[0]}
+            </p>
+          </div>
+          <div
+            style={styles.option}
+          >
             <div
               style={{
-                alignItems: "center",
-                display: "flex",
-                gap: "2",
+                ...styles.optionIndicator,
+                backgroundColor: "#EF4444"
               }}
+            />
+            <p
+              style={styles.optionText}
             >
-              <div
-                style={{
-                  backgroundColor: "#EF4444",
-                  border: "1px solid #E5E7EB",
-                  borderColor: "#E5E7EB",
-                  borderRadius: "9999px",
-                  display: "flex",
-                  height: "1rem",
-                  width: "1rem",
-                }}
-              />
-              <p
-                style={{
-                  fontSize: "0.875rem",
-                  color: "white",
-                }}
-              >
-                { getOptions(questions, 0)[1] }
-              </p>
-            </div>
+              {getOptions(questions, 0)[1]}
+            </p>
+          </div>
+          <div
+            style={styles.option}
+          >
             <div
               style={{
-                alignItems: "center",
-                display: "flex",
-                gap: "2",
+                ...styles.optionIndicator,
+                backgroundColor: "#3B82F6",
               }}
+            />
+            <p
+              style={styles.optionText}
             >
-              <div
-                style={{
-                  backgroundColor: "#3B82F6",
-                  border: "1px solid #E5E7EB",
-                  borderColor: "#E5E7EB",
-                  borderRadius: "9999px",
-                  display: "flex",
-                  height: "1rem",
-                  width: "1rem",
-                }}
-              />
-              <p
-                style={{
-                  fontSize: "0.875rem",
-                  color: "white",
-                }}
-              >
-                {getOptions(questions, 0)[2]}
-              </p>
-            </div>
+              {getOptions(questions, 0)[2]}
+            </p>
+          </div>
+          <div
+            style={styles.option}
+          >
             <div
               style={{
-                alignItems: "center",
-                display: "flex",
-                gap: "2",
+                ...styles.optionIndicator,
+                backgroundColor: "#F59E0B"
               }}
+            />
+            <p
+              style={styles.optionText}
             >
-              <div
-                style={{
-                  backgroundColor: "#F59E0B",
-                  border: "1px solid #E5E7EB",
-                  borderColor: "#E5E7EB",
-                  display: "flex",
-                  borderRadius: "9999px",
-                  height: "1rem",
-                  width: "1rem",
-                }}
-              />
-              <p
-                style={{
-                  fontSize: "0.875rem",
-                  color: "white",
-                }}
-              >
-                {getOptions(questions, 0)[2]}
-              </p>
+              {getOptions(questions, 0)[2]}
+            </p>
           </div>
         </div>
 

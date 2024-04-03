@@ -12,4 +12,4 @@ export interface MutableGameSession {
 }
 
 // Define the read-only session interface based on the mutable session interface
-export type GameSession = Readonly<MutableGameSession>;
+export type GameSession = Readonly<MutableGameSession> | undefined;
