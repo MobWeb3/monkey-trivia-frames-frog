@@ -1,4 +1,12 @@
+import { BackgroundImage } from "@mantine/core";
+
 const styles = {
+  mainContainer: {
+    display: 'flex' as const,
+    flexDirection: 'column' as const,
+    height: '100%',
+    width: '100%',
+  },
   container: {
     alignItems: 'center' as const,
     background: 'black',
@@ -48,6 +56,37 @@ const styles = {
     fontWeight: 'bold',
     marginTop: '1rem',
     color: 'white',
+  },
+  header1: {
+    fontSize: "3.5rem",
+    fontWeight: "700",
+    color: "white",
+  },
+  header2: {
+    fontSize: "2.0rem ",
+    fontWeight: "700",
+    color: "#FDD673",
+  }, 
+  initialContainer: {
+    alignItems: 'center' as const,
+    backgroundSize: '100% 100%',
+    display: 'flex' as const,
+    flexDirection: 'column' as const,
+    flexWrap: 'nowrap' as const,
+    height: '100%',
+    justifyContent: 'center' as const,
+    textAlign: 'center' as const,
+    width: '100%',
+  },
+  initialBackgroundTextContainer: {
+    display: 'flex' as const,
+    flexDirection: 'column' as const,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    // dark transparent background for text
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    padding: '2rem',
+    borderRadius: '2rem',
   }
 };
 
