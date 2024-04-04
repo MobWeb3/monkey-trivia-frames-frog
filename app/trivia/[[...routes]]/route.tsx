@@ -10,12 +10,21 @@ import { getFrameSession, getQuestions } from '@/app/mongo/frame-session'
 import { Question } from '@/app/game-domain/question'
 import styles from './route.module'
 
-const app = new Frog({
+type State = {
+  questionIndex: number
+}
+
+const app = new Frog<{State: State}>({
+  initialState: {
+    questionIndex: 0
+  },
   assetsPath: '/',
   basePath: '/trivia',
   // Supply a Hub to enable frame verification.
   // hub: neynar({ apiKey: 'NEYNAR_FROG_FM' })
 })
+
+
 
 // Uncomment to use Edge Runtime
 // export const runtime = 'edge'
@@ -36,12 +45,18 @@ const getOptionText = (questions: Question[], index: number, optionIndex: number
 };
 
 app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
-  const { status } = c
+  const { status, deriveState, buttonValue } = c
   const { sessionId } = c.req.param()
-  console.log('base url', BASE_URL)
-
   let frameSession;
   let questions = [] as Question[];
+
+  const state = deriveState(previousState => {
+    if (buttonValue === 'prev' && previousState.questionIndex > 0) {
+      previousState.questionIndex--
+    }
+    if (buttonValue === 'next') previousState.questionIndex++
+  })
+
   try {
     frameSession = await getFrameSession(sessionId);
     console.log('frame session: ', frameSession)
@@ -64,7 +79,7 @@ app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
         <h2
           style={styles.question}
         >
-          {getQuestion(questions, 0)}
+          {getQuestion(questions, state.questionIndex)}
         </h2>
         <div
           style={styles.optionsContainer}
@@ -81,7 +96,7 @@ app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
             <p
               style={styles.optionText}
             >
-              {getOptionText(questions, 0, 0)}
+              {getOptionText(questions, state.questionIndex, 0)}
             </p>
           </div>
           <div
@@ -96,7 +111,7 @@ app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
             <p
               style={styles.optionText}
             >
-              {getOptionText(questions, 0, 1)}
+              {getOptionText(questions, state.questionIndex, 1)}
             </p>
           </div>
           <div
@@ -111,10 +126,10 @@ app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
             <p
               style={styles.optionText}
             >
-              {getOptionText(questions, 0, 2)}
+              {getOptionText(questions, state.questionIndex, 2)}
             </p>
           </div>
-          {getOptionText(questions, 0, 3) && <div
+          {getOptionText(questions, state.questionIndex, 3) && <div
             style={styles.option}
           >
             <div
@@ -126,18 +141,22 @@ app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
             <p
               style={styles.optionText}
             >
-              {getOptionText(questions, 0, 3)}
+              {getOptionText(questions, state.questionIndex, 3)}
             </p>
           </div>}
         </div>
+        <p style={styles.footer}>Question {state.questionIndex + 1} / {frameSession?.numberOfQuestions}</p>
+        
       </div>
 
     ),
     intents: [
       <TextInput placeholder="Enter custom fruit..." />,
-      <Button value="apples">Apples</Button>,
-      <Button value="oranges">Oranges</Button>,
-      <Button value="bananas">Bananas</Button>,
+      state.questionIndex > 0 && <Button value="prev">Previous</Button>,
+      frameSession &&
+      (state.questionIndex < frameSession?.numberOfQuestions - 1) && 
+      <Button value="next">Next</Button>,
+      // <Button value="bananas">Bananas</Button>,
       status === 'response' && <Button.Reset>Reset</Button.Reset>,
     ],
   })

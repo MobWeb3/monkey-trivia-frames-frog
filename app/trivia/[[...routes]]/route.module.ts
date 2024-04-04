@@ -42,6 +42,12 @@ const styles = {
     fontSize: "2rem",
     color: "white",
     paddingLeft: "0.5rem",
+  },
+  footer: {
+    fontSize: '1.5rem',
+    fontWeight: 'bold',
+    marginTop: '1rem',
+    color: 'white',
   }
 };
 
