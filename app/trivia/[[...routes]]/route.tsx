@@ -30,6 +30,11 @@ const getOptions = (questions: Question[], index: number) => {
     questions[index].options ? questions[index].options : []
 }
 
+const getOptionText = (questions: Question[], index: number, optionIndex: number) => {
+  const option = questions?.[index]?.options?.[optionIndex];
+  return option ? option : '';
+};
+
 app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
   const { status } = c
   const { sessionId } = c.req.param()
@@ -76,7 +81,7 @@ app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
             <p
               style={styles.optionText}
             >
-              {getOptions(questions, 0)[0]}
+              {getOptionText(questions, 0, 0)}
             </p>
           </div>
           <div
@@ -91,7 +96,7 @@ app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
             <p
               style={styles.optionText}
             >
-              {getOptions(questions, 0)[1]}
+              {getOptionText(questions, 0, 1)}
             </p>
           </div>
           <div
@@ -106,10 +111,10 @@ app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
             <p
               style={styles.optionText}
             >
-              {getOptions(questions, 0)[2]}
+              {getOptionText(questions, 0, 2)}
             </p>
           </div>
-          <div
+          {getOptionText(questions, 0, 3) && <div
             style={styles.option}
           >
             <div
@@ -121,12 +126,12 @@ app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
             <p
               style={styles.optionText}
             >
-              {getOptions(questions, 0)[2]}
+              {getOptionText(questions, 0, 3)}
             </p>
-          </div>
+          </div>}
         </div>
-
       </div>
+
     ),
     intents: [
       <TextInput placeholder="Enter custom fruit..." />,
