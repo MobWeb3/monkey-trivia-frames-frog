@@ -13,11 +13,20 @@ import { FrameSession } from '@/app/game-domain/frame-session'
 type State = {
   questionIndex: number
   gameState: 'initial' | 'playing' | 'finished'
+  questions: Question[]
+  correctAnswers: number
+  numberOfQuestions: number
+  frameSession: FrameSession
 }
 
 const app = new Frog<{ State: State }>({
   initialState: {
-    questionIndex: 0
+    questionIndex: 0,
+    correctAnswers: 0,
+    gameState: 'initial',
+    questions: [],
+    numberOfQuestions: 0,
+    frameSession: {} as FrameSession
   },
   assetsPath: '/',
   basePath: '/trivia',
@@ -36,10 +45,13 @@ const getQuestion = (questions: Question[], index: number) => {
 const isCorrectAnswer = (questions: Question[], index: number, optionPicked: number) => {
   if (questions && questions.length > 0 &&
     questions[index] &&
-    questions[index].options ) {
+    questions[index].options) {
+
+    const optionPickedValue = questions[index].options[optionPicked];
+    questions[index].player_answer = optionPickedValue;
     // console.log('Answer:', questions[index].answer)
     // console.log('Option picked:', questions[index].options[optionPicked])
-    return questions[index].options[optionPicked] === questions[index].answer
+    return optionPickedValue === questions[index].answer
   }
   return false
 }
@@ -177,31 +189,55 @@ const initialHtml = () => {
   )
 }
 
+const EndHtml = (state: State, session: FrameSession) => {
+  return (
+    <div
+      style={{
+        ...styles.initialContainer,
+        backgroundImage: 'url(https://monkeytrivia.xyz/assets/images/bg.jpg)',
+      }}
+    >
+      <div
+        style={styles.initialBackgroundTextContainer}
+      >
+        <h1
+          style={styles.header1}
+        >
+          Game Over!
+        </h1>
+
+        <h1
+          style={styles.header2}
+        >
+          Score: {Math.floor(state.correctAnswers / session.numberOfQuestions * 100)}%
+        </h1>
+
+        <h1
+          style={styles.header2}
+        >
+          blach blah blah
+        </h1>
+        <h1
+          style={styles.header2}
+        >
+          blach blah blah
+        </h1>
+      </div>
+
+    </div>
+  )
+}
+
 app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
-  const { status, buttonValue } = c
+  const { status, buttonValue, frameData, deriveState } = c
   const { sessionId } = c.req.param()
-  let frameSession;
+  let frameSession: FrameSession = {} as FrameSession;
   let questions = [] as Question[];
-
-  let state: State = c.previousState
-
-  // if status is initial, show the initial screen and reset the question index
-  // and gameState
-  if (status === 'initial') {
-    console.log('status: ', status)
-    // state = deriveState(previousState => {
-    state.questionIndex = 0
-    state.gameState = 'initial'
-    // })
-  }
-
-  // console.log('frameData:', frameData)
-  // console.log('previousButtonValues:', c.previousButtonValues)
 
   try {
     frameSession = await getFrameSession(sessionId);
-    // console.log('frame session: ', frameSession)
-
+    console.log('frame session: ', frameSession)
+    // previousState.numberOfQuestions = previousState.frameSession.numberOfQuestions;
     if (!frameSession) {
       console.log('No frame session found')
     }
@@ -214,39 +250,47 @@ app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
   }
 
 
-  // if 0 <= buttonValue <= 3, check if the answer is correct
-  if (buttonValue && ['0', '1', '2', '3'].includes(buttonValue)) {
-    // console.log("questiions:", questions)
-    if (isCorrectAnswer(questions, state.questionIndex, parseInt(buttonValue))) {
-      console.log('Correct answer!')
-    } else {
-      console.log('Incorrect answer!')
+  const state = deriveState((previousState: State) => {
+    // if 0 <= buttonValue <= 3, check if the answer is correct
+    if (buttonValue && ['0', '1', '2', '3'].includes(buttonValue)) {
+      console.log("questions:", previousState.questions)
+      if (isCorrectAnswer(previousState.questions, previousState.questionIndex, parseInt(buttonValue))) {
+        previousState.questions[previousState.questionIndex].player_correct = true;
+        previousState.correctAnswers++;
+        console.log('Correct answer!')
+      } else {
+        previousState.questions[previousState.questionIndex].player_correct = false;
+        previousState.questions[previousState.questionIndex].player_answer = previousState.questions[previousState.questionIndex].options[parseInt(buttonValue)];
+        console.log('Incorrect answer!')
+      }
+      previousState.questionIndex++
     }
-    state.questionIndex++
-  }
-
-
-  if (buttonValue === 'prev' && state.questionIndex > 0) {
-    state.questionIndex--
-  }
-  if (buttonValue === 'next') state.questionIndex++
-  if (buttonValue === 'start') state.gameState = 'playing'
-  if (buttonValue === '_c') {
-    state.questionIndex = 0
-    state.gameState = 'initial'
-    console.log('Reset game');
-  }
-
-  console.log('buttonValue:', buttonValue)
+    else if (buttonValue === 'start') {
+      previousState.gameState = 'playing';
+      previousState.numberOfQuestions = frameSession.numberOfQuestions;
+      previousState.frameSession = frameSession;
+      previousState.questions = questions;
+    }
+    else if (status === 'initial') {
+      previousState.gameState = 'initial';
+      previousState.questionIndex = 0;
+      previousState.correctAnswers = 0;
+      previousState.numberOfQuestions = frameSession.numberOfQuestions;
+      // console.log('frame session:', frameSession)
+    }
+  });
 
   const isGameActive = state.gameState === 'playing';
-
+  const showChoice = isGameActive &&
+    state.questionIndex < state.numberOfQuestions &&
+    status !== 'initial';
 
   return c.res({
     image: (
       <div style={styles.mainContainer}>
         {status === 'initial' && initialHtml()}
-        {status === 'response' && questionHtml(state, questions, frameSession)}
+        {status === 'response' && state.questionIndex < state.numberOfQuestions && questionHtml(state, state.questions, state.frameSession)}
+        {status === 'response' && state.questionIndex >= state.numberOfQuestions && EndHtml(state, state.frameSession)}
 
       </div>
     ),
@@ -255,10 +299,10 @@ app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
       status === 'initial' && <Button value="start">Start</Button>,
 
       // Choices
-      isGameActive && <Button value="0">{getOptionText(questions, state.questionIndex, 0)}</Button>,
-      isGameActive && <Button value="1">{getOptionText(questions, state.questionIndex, 1)}</Button>,
-      isGameActive && <Button value="2">{getOptionText(questions, state.questionIndex, 2)}</Button>,
-      getOptionText(questions, state.questionIndex, 3).length > 0 && <Button value="3">{getOptionText(questions, state.questionIndex, 3)}</Button>,
+      showChoice && <Button value="0">{getOptionText(state.questions, state.questionIndex, 0)}</Button>,
+      showChoice && <Button value="1">{getOptionText(state.questions, state.questionIndex, 1)}</Button>,
+      showChoice && <Button value="2">{getOptionText(state.questions, state.questionIndex, 2)}</Button>,
+      showChoice && getOptionText(state.questions, state.questionIndex, 3).length > 0 && <Button value="3">{getOptionText(state.questions, state.questionIndex, 3)}</Button>,
     ],
   })
 })

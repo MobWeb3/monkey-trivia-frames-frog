@@ -6,6 +6,7 @@ const styles = {
     flexDirection: 'column' as const,
     height: '100%',
     width: '100%',
+    background: 'black'
   },
   container: {
     alignItems: 'center' as const,

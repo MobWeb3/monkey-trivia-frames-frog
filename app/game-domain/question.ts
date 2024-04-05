@@ -6,4 +6,6 @@ export interface Question {
     used?: boolean;
     metaphor_id?: string;
     general_id?: string;
+    player_answer?: string;
+    player_correct?: boolean;
 }
