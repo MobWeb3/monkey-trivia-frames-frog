@@ -1,6 +1,6 @@
 /** @jsxImportSource frog/jsx */
 
-import { Button, Frog, TextInput } from 'frog'
+import { Button, Frog } from 'frog'
 import { devtools } from 'frog/dev'
 // import { neynar } from 'frog/hubs'
 import { handle } from 'frog/next'
@@ -12,6 +12,7 @@ import { FrameSession } from '@/app/game-domain/frame-session'
 
 type State = {
   questionIndex: number
+  gameState: 'initial' | 'playing' | 'finished'
 }
 
 const app = new Frog<{ State: State }>({
@@ -24,8 +25,6 @@ const app = new Frog<{ State: State }>({
   // hub: neynar({ apiKey: 'NEYNAR_FROG_FM' })
 })
 
-
-
 // Uncomment to use Edge Runtime
 // export const runtime = 'edge'
 
@@ -34,10 +33,21 @@ const getQuestion = (questions: Question[], index: number) => {
     `${questions[index].question}` : 'empty'
 }
 
-// const getOptions = (questions: Question[], index: number) => {
-//   return questions.length > 0 && questions[index] &&
-//     questions[index].options ? questions[index].options : []
-// }
+const isCorrectAnswer = (questions: Question[], index: number, optionPicked: number) => {
+  if (questions && questions.length > 0 &&
+    questions[index] &&
+    questions[index].options ) {
+    // console.log('Answer:', questions[index].answer)
+    // console.log('Option picked:', questions[index].options[optionPicked])
+    return questions[index].options[optionPicked] === questions[index].answer
+  }
+  return false
+}
+
+const getOptions = (questions: Question[], index: number) => {
+  return questions.length > 0 && questions[index] &&
+    questions[index].options ? questions[index].options : []
+}
 
 const getOptionText = (questions: Question[], index: number, optionIndex: number) => {
   const option = questions?.[index]?.options?.[optionIndex];
@@ -136,7 +146,7 @@ const initialHtml = () => {
         backgroundImage: 'url(https://monkeytrivia.xyz/assets/images/bg.jpg)',
       }}
     >
-      <div 
+      <div
         style={styles.initialBackgroundTextContainer}
       >
         <h1
@@ -168,22 +178,29 @@ const initialHtml = () => {
 }
 
 app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
-  const { status, deriveState, buttonValue } = c
+  const { status, buttonValue } = c
   const { sessionId } = c.req.param()
   let frameSession;
   let questions = [] as Question[];
 
-  const state = deriveState(previousState => {
-    if (buttonValue === 'prev' && previousState.questionIndex > 0) {
-      previousState.questionIndex--
-    }
-    if (buttonValue === 'next') previousState.questionIndex++
-    if (buttonValue === 'start') previousState.questionIndex = 0
-  })
+  let state: State = c.previousState
+
+  // if status is initial, show the initial screen and reset the question index
+  // and gameState
+  if (status === 'initial') {
+    console.log('status: ', status)
+    // state = deriveState(previousState => {
+    state.questionIndex = 0
+    state.gameState = 'initial'
+    // })
+  }
+
+  // console.log('frameData:', frameData)
+  // console.log('previousButtonValues:', c.previousButtonValues)
 
   try {
     frameSession = await getFrameSession(sessionId);
-    console.log('frame session: ', frameSession)
+    // console.log('frame session: ', frameSession)
 
     if (!frameSession) {
       console.log('No frame session found')
@@ -195,6 +212,36 @@ app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
   catch (e) {
     console.log('error', e)
   }
+
+
+  // if 0 <= buttonValue <= 3, check if the answer is correct
+  if (buttonValue && ['0', '1', '2', '3'].includes(buttonValue)) {
+    // console.log("questiions:", questions)
+    if (isCorrectAnswer(questions, state.questionIndex, parseInt(buttonValue))) {
+      console.log('Correct answer!')
+    } else {
+      console.log('Incorrect answer!')
+    }
+    state.questionIndex++
+  }
+
+
+  if (buttonValue === 'prev' && state.questionIndex > 0) {
+    state.questionIndex--
+  }
+  if (buttonValue === 'next') state.questionIndex++
+  if (buttonValue === 'start') state.gameState = 'playing'
+  if (buttonValue === '_c') {
+    state.questionIndex = 0
+    state.gameState = 'initial'
+    console.log('Reset game');
+  }
+
+  console.log('buttonValue:', buttonValue)
+
+  const isGameActive = state.gameState === 'playing';
+
+
   return c.res({
     image: (
       <div style={styles.mainContainer}>
@@ -204,13 +251,14 @@ app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
       </div>
     ),
     intents: [
-      state.questionIndex > 0 && <Button value="prev">Previous</Button>,
-      frameSession &&
-      (state.questionIndex < frameSession?.numberOfQuestions - 1) &&
-      status !== 'initial' && <Button value="next">Next</Button>,
-      // <Button value="bananas">Bananas</Button>,
-      status === 'response' && <Button.Reset>Reset</Button.Reset>,
+      status === 'response' && <Button.Reset >Reset</Button.Reset>,
       status === 'initial' && <Button value="start">Start</Button>,
+
+      // Choices
+      isGameActive && <Button value="0">{getOptionText(questions, state.questionIndex, 0)}</Button>,
+      isGameActive && <Button value="1">{getOptionText(questions, state.questionIndex, 1)}</Button>,
+      isGameActive && <Button value="2">{getOptionText(questions, state.questionIndex, 2)}</Button>,
+      getOptionText(questions, state.questionIndex, 3).length > 0 && <Button value="3">{getOptionText(questions, state.questionIndex, 3)}</Button>,
     ],
   })
 })
