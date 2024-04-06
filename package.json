@@ -11,6 +11,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@chainlink/env-enc": "^1.0.5",
     "@mantine/core": "^7.6.2",
     "@neynar/nodejs-sdk": "^1.15.0",
     "@tabler/icons-react": "^3.1.0",
