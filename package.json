@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@mantine/core": "^7.6.2",
+    "@neynar/nodejs-sdk": "^1.15.0",
     "@tabler/icons-react": "^3.1.0",
     "@vercel/og": "^0.6.2",
     "axios": "^1.6.8",

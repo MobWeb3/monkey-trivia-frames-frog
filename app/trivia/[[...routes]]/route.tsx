@@ -9,6 +9,8 @@ import { getFrameSession, getQuestions } from '@/app/mongo/frame-session'
 import { Question } from '@/app/game-domain/question'
 import styles from './route.module'
 import { FrameSession } from '@/app/game-domain/frame-session'
+import { NeynarAPIClient } from '@neynar/nodejs-sdk'
+import { mintCompressedNFT } from '@/app/solana/mint'
 
 type State = {
   questionIndex: number
@@ -228,11 +230,12 @@ const EndHtml = (state: State, session: FrameSession) => {
   )
 }
 
-app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
+app.frame('/session/:sessionId', async (c) => {
   const { status, buttonValue, frameData, deriveState } = c
   const { sessionId } = c.req.param()
   let frameSession: FrameSession = {} as FrameSession;
   let questions = [] as Question[];
+  let solanaAddress = '';
 
   try {
     frameSession = await getFrameSession(sessionId);
@@ -241,7 +244,19 @@ app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
     if (!frameSession) {
       console.log('No frame session found')
     }
+    const client = new NeynarAPIClient(process.env.NEYNAR_API_KEY ?? "");
 
+    console.log("api key:", process.env.NEYNAR_API_KEY)
+
+    const fid = frameData?.fid ?? 1;
+
+    const userBulkResponse = client.fetchBulkUsers([fid]);
+
+    console.log('user bulk response:', (await userBulkResponse).users[0]);
+
+    solanaAddress = (await userBulkResponse).users[0].verified_addresses.sol_addresses[0];
+
+    console.log('Solana address:', solanaAddress);
     // Get questions given the metaphor id
     questions = await getQuestions(frameSession.metaphor_id);
   }
@@ -278,6 +293,18 @@ app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
       previousState.numberOfQuestions = frameSession.numberOfQuestions;
       // console.log('frame session:', frameSession)
     }
+    else if (buttonValue === 'mint') {
+      // Mint NFT
+      console.log('Minting NFT...');
+      // make sure to set your NEYNAR_API_KEY .env
+      const mintResult =  mintCompressedNFT(solanaAddress);
+      mintResult.then((result) => {
+        console.log('Mint result:', result)
+      }).catch((error) => {
+        console.log('Mint error:', error)
+      });
+
+    }
   });
 
   const isGameActive = state.gameState === 'playing';
@@ -302,6 +329,7 @@ app.frame('/trivia/session/:sessionId/user/:userId', async (c) => {
       showChoice && <Button value="0">{getOptionText(state.questions, state.questionIndex, 0)}</Button>,
       showChoice && <Button value="1">{getOptionText(state.questions, state.questionIndex, 1)}</Button>,
       showChoice && <Button value="2">{getOptionText(state.questions, state.questionIndex, 2)}</Button>,
+      <Button value="mint">Mint</Button>,
       showChoice && getOptionText(state.questions, state.questionIndex, 3).length > 0 && <Button value="3">{getOptionText(state.questions, state.questionIndex, 3)}</Button>,
     ],
   })
