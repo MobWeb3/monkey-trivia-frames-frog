@@ -1,11 +1,11 @@
-.main {
+/* .main {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
   padding: 6rem;
   min-height: 100vh;
-}
+} */
 
 .description {
   display: inherit;
@@ -226,5 +226,38 @@
   }
   to {
     transform: rotate(0deg);
+  }
+}
+
+
+@media (min-width: 767px) {
+  .main {
+      background-image: url('./assets/background/in-game-bg-peppermint-1920x1080.png');
+      background-size: cover; /* or use "100% 100%" to stretch the image */
+      background-repeat: no-repeat;
+      background-position: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6rem;
+      min-height: 100vh;
+  }
+}
+
+/* This media query will apply when the viewport width is 430px or more */
+@media (max-width: 767px) {
+  .main {
+      background-image: url('./assets/background/game-background-screen-peppermint-jungle-430x932.png');
+      background-size: cover; /* or use "100% 100%" to stretch the image */
+      background-repeat: no-repeat;
+      background-position: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6rem;
+      
+      /* min-height: 100vh; */
   }
 }
