@@ -1,13 +1,10 @@
 import { getFrameMetadata } from 'frog/next'
 import type { Metadata } from 'next'
-import Image from 'next/image'
-
 import styles from './page.module.css'
-import CustomButton from './components/CustomButton'
 
 export async function generateMetadata(): Promise<Metadata> {
   const frameTags = await getFrameMetadata(
-    `${process.env.VERCEL_URL || 'http://localhost:3000'}/api`,
+    `${process.env.VERCEL_URL || 'http://localhost:3000'}/trivia`,
   )
   return {
     other: frameTags,
