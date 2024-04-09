@@ -12,6 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function Home() {
+  console.log('process.env.VERCEL_URL', process.env.VERCEL_URL)
   return (
     <main className={styles.main}>
         

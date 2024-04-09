@@ -37,6 +37,7 @@ const app = new Frog<{ State: State }>({
   basePath: '/trivia',
   // Supply a Hub to enable frame verification.
   hub: neynar({ apiKey: process.env.NEYNAR_API_KEY ?? '' }),
+  browserLocation: '/:path'
 })
 
 // Uncomment to use Edge Runtime
@@ -271,14 +272,14 @@ app.frame('/session/:sessionId', async (c) => {
   const state = deriveState((previousState: State) => {
     // if 0 <= buttonValue <= 3, check if the answer is correct
     if (buttonValue && ['0', '1', '2', '3'].includes(buttonValue)) {
-      console.log("questions:", previousState.questions)
+      // console.log("questions:", previousState.questions)
       if (isCorrectAnswer(previousState.questions, previousState.questionIndex, parseInt(buttonValue))) {
-        previousState.questions[previousState.questionIndex].player_correct = true;
-        previousState.correctAnswers++;
+        // previousState.questions[previousState.questionIndex].player_correct = true;
+        // previousState.correctAnswers++;
         console.log('Correct answer!')
       } else {
-        previousState.questions[previousState.questionIndex].player_correct = false;
-        previousState.questions[previousState.questionIndex].player_answer = previousState.questions[previousState.questionIndex].options[parseInt(buttonValue)];
+        // previousState.questions[previousState.questionIndex].player_correct = false;
+        // previousState.questions[previousState.questionIndex].player_answer = previousState.questions[previousState.questionIndex].options[parseInt(buttonValue)];
         console.log('Incorrect answer!')
       }
       previousState.questionIndex++
@@ -287,7 +288,7 @@ app.frame('/session/:sessionId', async (c) => {
       previousState.gameState = 'playing';
       previousState.numberOfQuestions = frameSession.numberOfQuestions;
       previousState.frameSession = frameSession;
-      previousState.questions = questions;
+      // previousState.questions = questions;
     }
     else if (status === 'initial') {
       previousState.gameState = 'initial';
@@ -322,7 +323,7 @@ app.frame('/session/:sessionId', async (c) => {
     image: (
       <div style={styles.mainContainer}>
         {status === 'initial' && initialHtml()}
-        {status === 'response' && state.questionIndex < state.numberOfQuestions && questionHtml(state, state.questions, state.frameSession)}
+        {status === 'response' && state.questionIndex < state.numberOfQuestions && questionHtml(state, questions, state.frameSession)}
         {status === 'response' && state.questionIndex >= state.numberOfQuestions && EndHtml(state, state.frameSession)}
 
       </div>
@@ -332,11 +333,11 @@ app.frame('/session/:sessionId', async (c) => {
       status === 'initial' && <Button value="start">Start</Button>,
 
       // Choices
-      showChoice && <Button value="0">{getOptionText(state.questions, state.questionIndex, 0)}</Button>,
-      showChoice && <Button value="1">{getOptionText(state.questions, state.questionIndex, 1)}</Button>,
-      showChoice && <Button value="2">{getOptionText(state.questions, state.questionIndex, 2)}</Button>,
+      showChoice && <Button value="0">{getOptionText(questions, state.questionIndex, 0)}</Button>,
+      showChoice && <Button value="1">{getOptionText(questions, state.questionIndex, 1)}</Button>,
+      showChoice && <Button value="2">{getOptionText(questions, state.questionIndex, 2)}</Button>,
       <Button value="mint">Mint</Button>,
-      showChoice && getOptionText(state.questions, state.questionIndex, 3).length > 0 && <Button value="3">{getOptionText(state.questions, state.questionIndex, 3)}</Button>,
+      showChoice && getOptionText(questions, state.questionIndex, 3).length > 0 && <Button value="3">{getOptionText(state.questions, state.questionIndex, 3)}</Button>,
     ],
   })
 })
