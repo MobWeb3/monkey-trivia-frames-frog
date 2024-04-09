@@ -2,7 +2,6 @@
 
 import { Button, Frog } from 'frog'
 import { devtools } from 'frog/dev'
-// import { neynar } from 'frog/hubs'
 import { handle } from 'frog/next'
 import { serveStatic } from 'frog/serve-static'
 import { getFrameSession, getQuestions } from '@/app/mongo/frame-session'
@@ -11,6 +10,10 @@ import styles from './route.module'
 import { FrameSession } from '@/app/game-domain/frame-session'
 import { NeynarAPIClient } from '@neynar/nodejs-sdk'
 import { mintCompressedNFT } from '@/app/solana/mint'
+import * as envEnc from "@chainlink/env-enc";
+import { neynar } from 'frog/hubs'
+
+envEnc.config();
 
 type State = {
   questionIndex: number
@@ -33,7 +36,7 @@ const app = new Frog<{ State: State }>({
   assetsPath: '/',
   basePath: '/trivia',
   // Supply a Hub to enable frame verification.
-  // hub: neynar({ apiKey: 'NEYNAR_FROG_FM' })
+  hub: neynar({ apiKey: process.env.NEYNAR_API_KEY ?? '' }),
 })
 
 // Uncomment to use Edge Runtime
@@ -299,7 +302,10 @@ app.frame('/session/:sessionId', async (c) => {
       // make sure to set your NEYNAR_API_KEY .env
       const mintResult =  mintCompressedNFT(solanaAddress);
       mintResult.then((result) => {
-        console.log('Mint result:', result)
+        console.log('Mint result:', result);
+        // create the following link https://xray.helius.xyz/token/E4xZPUPbce6LPzTNzd8gV5M7q4CykRxJztJi8uaEmWhT?network=devnet
+        const tokenLink = `https://xray.helius.xyz/token/${result?.assetId ?? "none"}?network=devnet`;
+        console.log('Token link:', tokenLink);
       }).catch((error) => {
         console.log('Mint error:', error)
       });
